@@ -46,24 +46,38 @@ export const TodoSlice = createSlice({
         },
         removeTodo: (state, action) => {
             const { todoId, from } = action.payload
-            if( from === 'inbox'){
+            if (from === 'inbox') {
                 state.inbox = state.inbox.filter(t => t.id !== todoId)
-            }else if( from === 'completed'){
-                state.completedTodos = state.completedTodos.filter( t => t.id !== todoId)
+            } else if (from === 'completed') {
+                state.completedTodos = state.completedTodos.filter(t => t.id !== todoId)
             }
         },
         updateTodo: (state, action) => {
-            const { todoId, from } = action.payload
-            if( from === 'inbox'){
-                state.inbox = state.inbox.find(t => t.id === todoId)
-            }else if( from === 'todo'){
-                state.todosList = state.todosList.find(t => t.id === todoId) 
-            }else if( from === 'inprogress'){
-                state.inProgressTodos = state.inProgressTodos.find(t => t.id === todoId)
+            const { todoId, updates, from } = action.payload
+
+            
+            const listMap = {
+                inbox: 'inbox',
+                todo: 'todosList',
+                inprogress: 'inProgressTodos',
+                completed: 'completedTodos'
+            };
+
+            const listKey = listMap[from]
+            const list = state[listKey]
+
+            if (list && Array.isArray(list)) {
+                const idx = list.findIndex(todo => todo.id === todoId)
+                if (idx !== -1) {
+                    Object.assign(list[idx], updates)
+                }
+            } else {
+                console.warn(`Cannot update todo: state[${listKey}] is not a valid array.`);
             }
         }
+
     }
-    })
+})
 
 export const { addTodo, moveTodo, removeTodo, updateTodo } = TodoSlice.actions
 export const todoReducer = TodoSlice.reducer
